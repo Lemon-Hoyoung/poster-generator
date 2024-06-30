@@ -16,7 +16,6 @@ const generateHandle = async () => {
   const instruct = generateInstructFunc(instructString);
   const result = instruct(instructStore.inputParams)
   if (!Array.isArray(result)) return;
-  console.log('result: ', result);
   instructStore.setInstructExcuteResult(result);
   let component = await instructStore.templateComponentPromise;
   nextTick(() => {
@@ -89,7 +88,7 @@ watch(() => instructStore.showFormat, (format: ShowFormatEnum) => {
       >
         <div
           v-for="(result, index) in instructDataResults"
-          :id="result.id || index"
+          :id="result.id || `${index}`"
           class="image-generate-history-node"
           :data-filename="result.filename"
         >

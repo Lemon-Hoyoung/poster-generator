@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
-import type { IReadFile } from '@/utils/types';
+import type { IReadFile, IDataInput } from '@/utils/types';
 import { ShowFormatEnum } from '@/utils/enum';
 
 interface ISpecificFile extends IReadFile {
@@ -16,7 +16,7 @@ export const useInstructStore = defineStore('instruct', {
   state: () => {
     return {
       instructString: '',
-      instructExcuteResult: undefined,
+      instructExcuteResult: [] as IDataInput<any>[],
       fileList: [] as ISpecificFile[],
       routerName: '',
       domList: [] as HTMLElement[],
@@ -43,7 +43,7 @@ export const useInstructStore = defineStore('instruct', {
     setInstruct(value: string) {
       this.instructString = value;
     },
-    setInstructExcuteResult(value: any) {
+    setInstructExcuteResult(value: IDataInput<any>[]) {
       this.instructExcuteResult = value;
     },
     addFile(file: ISpecificFile) {
