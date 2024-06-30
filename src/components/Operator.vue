@@ -13,6 +13,7 @@ watch(() => showFormat.value, (format: ShowFormatEnum) => {
 }, { immediate: true });
 
 const generateHandle = async () => {
+  showFormat.value = ShowFormatEnum.DOM;
   const instructString = instructStore.instructString;
   const instruct = generateInstructFunc(instructString);
   const result = instruct(instructStore.inputParams)

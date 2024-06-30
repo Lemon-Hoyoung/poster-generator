@@ -57,11 +57,16 @@ watch(() => instructStore.showFormat, (format: ShowFormatEnum) => {
   nextTick(() => {
     console.log('format: ', format);
     const canvasList = document.getElementById('canvasList');
-    console.log('canvasListDom: ', canvasList);
-    // const imageList = document.getElementById('imageList');
+    const domList = document.getElementById('domList');
     if (format === ShowFormatEnum.DOM) {
-      // ... 重新生成
-      generateHandle();
+      if (Array.isArray(instructStore.domList) && instructStore.domList.length > 0) {
+        domList.innerHTML = '';
+        instructStore.domList.forEach((node) => {
+          domList?.appendChild(node);
+        });
+      } else {
+        generateHandle();
+      }
     } else if (format === ShowFormatEnum.CANVAS) {
       canvasList.innerHTML = '';
       instructStore.canvasList.forEach((node) => {
@@ -80,11 +85,15 @@ watch(() => instructStore.showFormat, (format: ShowFormatEnum) => {
     <el-card class="image-generate-history-card">
       <div
         v-if="instructStore.showFormat === ShowFormatEnum.DOM"
-        v-for="(result, index) in instructDataResults"
-        :id="result.id || index"
-        class="image-generate-history-node"
-        :data-filename="result.filename"
+        id="domList"
       >
+        <div
+          v-for="(result, index) in instructDataResults"
+          :id="result.id || index"
+          class="image-generate-history-node"
+          :data-filename="result.filename"
+        >
+        </div>
       </div>
       <div
         v-else-if="instructStore.showFormat === ShowFormatEnum.CANVAS"
