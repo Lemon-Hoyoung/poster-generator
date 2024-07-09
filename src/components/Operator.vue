@@ -6,7 +6,7 @@ import {
   generateInstructFunc,
   downloadBase64AsImage,
   saveBase64AsImage,
-  downloadImageIntoZip
+  downloadBase64ImageIntoZip
 } from '@/utils'
 import { ShowFormatEnum } from '@/utils/enum'
 const instructStore = useInstructStore()
@@ -14,6 +14,7 @@ const instructStore = useInstructStore()
 const showFormat: Ref<ShowFormatEnum> = ref(ShowFormatEnum.DOM)
 const showDialog: Ref<boolean> = ref(false)
 const folderName: Ref<string> = ref('')
+const quality = ref(80)
 
 watch(
   () => showFormat.value,
@@ -90,11 +91,11 @@ const downloadBatch = () => {
 const batchDownloadHandle = () => {
   showDialog.value = false
   if (folderName.value) {
-    downloadImageIntoZip(instructStore.base64ImageList, folderName.value)
+    downloadBase64ImageIntoZip(instructStore.base64ImageList, folderName.value, quality.value)
   } else {
     instructStore.base64ImageList.forEach((imageBase64) => {
       // downloadBase64AsImage(imageBase64.url, imageBase64.filename)
-      saveBase64AsImage(imageBase64.url, imageBase64.filename)
+      saveBase64AsImage(imageBase64.url, imageBase64.filename, quality.value)
     })
   }
 }
@@ -103,14 +104,24 @@ const batchDownloadHandle = () => {
 <template>
   <div class="operation-container">
     <el-card class="operation-card">
-      <el-button @click.stop="paramsConsoleLog">控制台参数打印</el-button>
-      <el-button @click.stop="generateHandle" type="primary">批量生成</el-button>
-      <el-button class="batch-download" @click.stop="downloadBatch">批量下载</el-button>
-      <el-radio-group v-model="showFormat">
-        <el-radio :value="ShowFormatEnum.DOM">DOM</el-radio>
-        <el-radio :value="ShowFormatEnum.CANVAS">Canvas</el-radio>
-        <el-radio :value="ShowFormatEnum.IMAGE">Image</el-radio>
-      </el-radio-group>
+      <div class="operation-flex">
+        <div class="flex-left">
+          <el-button @click.stop="paramsConsoleLog">控制台参数打印</el-button>
+          <el-button @click.stop="generateHandle" type="primary">批量生成</el-button>
+          <el-button class="batch-download" @click.stop="downloadBatch">批量下载</el-button>
+          <div class="quality-slider">
+            <span class="quality-title">图片质量：</span>
+            <el-slider v-model="quality" :step="10" size="large" />
+          </div>
+        </div>
+        <div class="flex-right">
+          <el-radio-group v-model="showFormat">
+            <el-radio :value="ShowFormatEnum.DOM">DOM</el-radio>
+            <el-radio :value="ShowFormatEnum.CANVAS">Canvas</el-radio>
+            <el-radio :value="ShowFormatEnum.IMAGE">Image</el-radio>
+          </el-radio-group>
+        </div>
+      </div>
     </el-card>
     <el-dialog v-model="showDialog" title="批量下载" width="700px" destroy-on-close center>
       文件夹名称：<el-input
@@ -137,11 +148,45 @@ const batchDownloadHandle = () => {
 .operation-card {
   height: 100px;
   display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.operation-card > .el-card__body {
+  width: 100% !important;
+}
+
+.operation-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.flex-left {
+  display: flex;
   justify-content: flex-start;
+  align-items: center;
+}
+
+.flex-right {
+  display: flex;
+  justify-content: flex-end;
   align-items: center;
 }
 
 .batch-download {
   margin-right: 20px;
+}
+
+.quality-slider {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 400px;
+  margin-right: 20px;
+}
+
+.quality-title {
+  width: 100px;
 }
 </style>

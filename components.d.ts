@@ -21,6 +21,7 @@ declare module 'vue' {
     ElMain: typeof import('element-plus/es')['ElMain']
     ElRadio: typeof import('element-plus/es')['ElRadio']
     ElRadioGroup: typeof import('element-plus/es')['ElRadioGroup']
+    ElSlider: typeof import('element-plus/es')['ElSlider']
     ElUpload: typeof import('element-plus/es')['ElUpload']
     ImageGenerateHistory: typeof import('./src/components/ImageGenerateHistory.vue')['default']
     ImagePreview: typeof import('./src/components/ImagePreview.vue')['default']

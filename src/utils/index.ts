@@ -1,6 +1,7 @@
 import JSZip from 'jszip'
 import type { IReadFile, IImageList } from './types'
 import { saveAs } from 'file-saver'
+import UPNG from 'upng-js'
 
 const generateInstructFunc = (instruct: string) => {
   return (params: any = {}) => {
@@ -64,13 +65,23 @@ const base64ConvertFile = function (urlData: string, filename: string) {
   })
 }
 
-const downloadBase64AsImage = (urlData: string, filename: string) => {
+const compressPNG = async (file: File, quality = 0.8) => {
+  const arrayBuffer = await file.arrayBuffer()
+  const decoded = UPNG.decode(arrayBuffer)
+  const rgba8 = UPNG.toRGBA8(decoded)
+
+  const compressed = UPNG.encode(rgba8, decoded.width, decoded.height, 256 * quality)
+  return new File([compressed], file.name, { type: 'image/png' })
+}
+
+const downloadBase64AsImage = async (urlData: string, filename: string) => {
   const downloadFile = base64ConvertFile(urlData, filename)
+  const compressedFile = await compressPNG(downloadFile)
   const tmpLink = document.createElement('a')
-  const objectUrl = URL.createObjectURL(downloadFile)
+  const objectUrl = URL.createObjectURL(compressedFile)
 
   tmpLink.href = objectUrl
-  tmpLink.download = downloadFile.name
+  tmpLink.download = compressedFile.name
   document.body.appendChild(tmpLink)
   tmpLink.click()
 
@@ -78,21 +89,31 @@ const downloadBase64AsImage = (urlData: string, filename: string) => {
   URL.revokeObjectURL(objectUrl)
 }
 
-const saveBase64AsImage = (urlData: string, filename: string) => {
+const saveBase64AsImage = async (urlData: string, filename: string, quality = 80) => {
   const downloadFile = base64ConvertFile(urlData, filename)
-  saveAs(downloadFile, filename)
+  const compressedFile = await compressPNG(downloadFile, quality / 100)
+  saveAs(compressedFile, filename)
 }
 
-const downloadImageIntoZip = (imageList: IImageList[], folderName: string) => {
+const downloadBase64ImageIntoZip = async (
+  imageList: IImageList[],
+  folderName: string,
+  quality = 80
+) => {
   let zip = new JSZip()
   let imageFolder = zip.folder(folderName)
-  imageList.forEach((image: IImageList) => {
-    imageFolder?.file(
-      `${image.filename}.png`,
-      image.url.replace(/^data:image\/(png|jpg|jpeg);base64,/, ''),
-      { base64: true }
-    )
-  })
+  for (let i = 0; i < imageList.length; i++) {
+    const downloadFile = base64ConvertFile(imageList[i].url, imageList[i].filename)
+    const compressedFile = await compressPNG(downloadFile, quality / 100)
+    imageFolder?.file(`${imageList[i].filename}.png`, compressedFile)
+  }
+  // imageList.forEach(async (image: IImageList) => {
+  //   imageFolder?.file(
+  //     `${image.filename}.png`,
+  //     image.url.replace(/^data:image\/(png|jpg|jpeg);base64,/, ''),
+  //     { base64: true }
+  //   )
+  // })
   zip.generateAsync({ type: 'blob' }).then((content) => {
     saveAs(content, `${folderName}.zip`)
   })
@@ -104,5 +125,5 @@ export {
   safeJsonParse,
   downloadBase64AsImage,
   saveBase64AsImage,
-  downloadImageIntoZip
+  downloadBase64ImageIntoZip
 }
