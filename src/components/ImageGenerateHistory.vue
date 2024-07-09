@@ -46,7 +46,8 @@ const generateHandle = async () => {
       if (node === null) return { url: '', filename: '' }
       await ready
       const canvas = await html2canvas(node.childNodes[0], {
-        scale: 1,
+        dpi: window.devicePixelRatio * 2,
+        scale: 2,
         useCORS: true,
         backgroundColor: 'transparent',
         allowTaint: true

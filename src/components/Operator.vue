@@ -2,11 +2,18 @@
 import { ref, createApp, nextTick, watch, Ref } from 'vue'
 import html2canvas from 'html2canvas'
 import { useInstructStore } from '@/stores/instruct'
-import { generateInstructFunc, downloadBase64AsImage } from '@/utils'
+import {
+  generateInstructFunc,
+  downloadBase64AsImage,
+  saveBase64AsImage,
+  downloadImageIntoZip
+} from '@/utils'
 import { ShowFormatEnum } from '@/utils/enum'
 const instructStore = useInstructStore()
 
 const showFormat: Ref<ShowFormatEnum> = ref(ShowFormatEnum.DOM)
+const showDialog: Ref<boolean> = ref(false)
+const folderName: Ref<string> = ref('')
 
 watch(
   () => showFormat.value,
@@ -51,7 +58,8 @@ const generateHandle = async () => {
       if (node === null) return { url: '', filename: '' }
       await ready
       const canvas = await html2canvas(node.childNodes[0], {
-        scale: 1,
+        dpi: window.devicePixelRatio * 2,
+        scale: 2,
         useCORS: true,
         backgroundColor: 'transparent',
         allowTaint: true
@@ -76,9 +84,19 @@ const paramsConsoleLog = () => {
 }
 
 const downloadBatch = () => {
-  instructStore.base64ImageList.forEach((imageBase64) => {
-    downloadBase64AsImage(imageBase64.url, imageBase64.filename)
-  })
+  showDialog.value = true
+}
+
+const batchDownloadHandle = () => {
+  showDialog.value = false
+  if (folderName.value) {
+    downloadImageIntoZip(instructStore.base64ImageList, folderName.value)
+  } else {
+    instructStore.base64ImageList.forEach((imageBase64) => {
+      // downloadBase64AsImage(imageBase64.url, imageBase64.filename)
+      saveBase64AsImage(imageBase64.url, imageBase64.filename)
+    })
+  }
 }
 </script>
 
@@ -94,6 +112,20 @@ const downloadBatch = () => {
         <el-radio :value="ShowFormatEnum.IMAGE">Image</el-radio>
       </el-radio-group>
     </el-card>
+    <el-dialog v-model="showDialog" title="批量下载" width="700px" destroy-on-close center>
+      文件夹名称：<el-input
+        v-model="folderName"
+        style="width: 500px"
+        :placeholder="`请输入文件夹名称，若为空则直接下载，否则下载到压缩包中`"
+        :resize="false"
+      ></el-input>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="showDialog = false">取消</el-button>
+          <el-button type="primary" @click="batchDownloadHandle">下载</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
