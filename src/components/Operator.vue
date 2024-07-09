@@ -24,15 +24,17 @@ const generateHandle = async () => {
   if (!Array.isArray(result)) return
   console.log('result: ', result)
   instructStore.setInstructExcuteResult(result)
-  let component = await instructStore.templateComponentPromise
+  let { component, config } = await instructStore.templateComponentPromise
   nextTick(() => {
     const componentsNodes = result.map((param, index) => {
       const id = param?.id || index
       const data = param?.data || {}
       let readyToRender = (value: any) => {}
-      const readyPromise = new Promise((resolve) => {
-        readyToRender = resolve
-      })
+      const readyPromise = config?.async
+        ? new Promise((resolve) => {
+            readyToRender = resolve
+          })
+        : Promise.resolve(true)
       const app = createApp(component, {
         ...data,
         readyToRender
@@ -48,7 +50,8 @@ const generateHandle = async () => {
     const componentsImageBase64 = componentsNodes.map(async ({ node, ready }) => {
       if (node === null) return { url: '', filename: '' }
       await ready
-      const canvas = await html2canvas(node, {
+      const canvas = await html2canvas(node.childNodes[0], {
+        scale: 1,
         useCORS: true,
         backgroundColor: 'transparent',
         allowTaint: true

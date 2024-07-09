@@ -1,15 +1,16 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
-import type { IReadFile, IDataInput } from '@/utils/types';
-import { ShowFormatEnum } from '@/utils/enum';
+import type { IReadFile, IDataInput } from '@/utils/types'
+import { ShowFormatEnum } from '@/utils/enum'
+import { templateList } from '@/router/templateConfig'
 
 interface ISpecificFile extends IReadFile {
-  jsonValue: Record<string, any>;
+  jsonValue: Record<string, any>
 }
 
 interface IImageFile {
-  url: string;
-  filename: string;
+  url: string
+  filename: string
 }
 
 export const useInstructStore = defineStore('instruct', {
@@ -22,50 +23,54 @@ export const useInstructStore = defineStore('instruct', {
       domList: [] as HTMLElement[],
       canvasList: [] as HTMLCanvasElement[],
       base64ImageList: [] as IImageFile[],
-      showFormat: ShowFormatEnum.DOM,
-    };
+      showFormat: ShowFormatEnum.DOM
+    }
   },
   getters: {
     inputParams(state) {
       return {
         uploadFiles: state.fileList,
-        config: {},
+        config: {}
       }
     },
     templateComponentPromise(state) {
-      const component = ((state) => import(`@/templates/${state.routerName}/index.vue`))(state);
+      const component = ((state) => import(`@/templates/${state.routerName}/index.vue`))(state)
+      const componentConfig = templateList.find((item) => item.name === state.routerName)
       return component.then((comp) => {
-        return comp.default;
+        return {
+          component: comp.default,
+          config: componentConfig
+        }
       })
-    },
+    }
   },
   actions: {
     setInstruct(value: string) {
-      this.instructString = value;
+      this.instructString = value
     },
     setInstructExcuteResult(value: IDataInput<any>[]) {
-      this.instructExcuteResult = value;
+      this.instructExcuteResult = value
     },
     addFile(file: ISpecificFile) {
-      this.fileList.push(file);
+      this.fileList.push(file)
     },
     clearFiles() {
-      this.fileList = [];
+      this.fileList = []
     },
     setRouterName(name: string) {
-      this.routerName = name;
+      this.routerName = name
     },
     setDomList(list: HTMLElement[]) {
-      this.domList = list;
+      this.domList = list
     },
     setCanvasList(list: HTMLCanvasElement[]) {
-      this.canvasList = list;
+      this.canvasList = list
     },
     setBase64ImageList(list: IImageFile[]) {
-      this.base64ImageList = list;
+      this.base64ImageList = list
     },
     setShowFormat(format: ShowFormatEnum) {
-      this.showFormat = format;
-    },
-  },
+      this.showFormat = format
+    }
+  }
 })
