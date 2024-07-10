@@ -13,6 +13,7 @@ const instructDataResults = computed(() => {
 
 const generateHandle = async () => {
   instructStore.setShowFormat(ShowFormatEnum.DOM)
+  instructStore.setFormatChangeDisabled(true)
   const instructString = instructStore.instructString
   const instruct = generateInstructFunc(instructString)
   const result = instruct(instructStore.inputParams)
@@ -25,14 +26,17 @@ const generateHandle = async () => {
       const id = param?.id || index
       const data = param?.data || {}
       let readyToRender = (value: any) => {}
+      let stopToRender = (value: any) => {}
       const readyPromise = config?.async
-        ? new Promise((resolve) => {
+        ? new Promise((resolve, reject) => {
             readyToRender = resolve
+            stopToRender = reject
           })
         : Promise.resolve(true)
       const app = createApp(component, {
         ...data,
-        readyToRender
+        readyToRender,
+        stopToRender
       })
       const rootContainer = document.getElementById(`${id}`)
       if (rootContainer === null) return { node: null, ready: Promise.resolve() }
@@ -44,7 +48,11 @@ const generateHandle = async () => {
     let canvasList: HTMLCanvasElement[] = []
     const componentsImageBase64 = componentsNodes.map(async ({ node, ready }) => {
       if (node === null) return { url: '', filename: '' }
-      await ready
+      try {
+        await ready
+      } catch (e) {
+        return { url: '', filename: '' }
+      }
       const canvas = await html2canvas(node.childNodes[0], {
         dpi: window.devicePixelRatio * 2,
         scale: 2,
@@ -61,8 +69,10 @@ const generateHandle = async () => {
     })
 
     Promise.all(componentsImageBase64).then((imageList) => {
+      const validImageList = imageList.filter((image) => image.url)
       instructStore.setCanvasList(canvasList)
-      instructStore.setBase64ImageList(imageList)
+      instructStore.setBase64ImageList(validImageList)
+      instructStore.setFormatChangeDisabled(false)
     })
   })
 }

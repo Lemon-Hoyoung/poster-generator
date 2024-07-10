@@ -6,13 +6,15 @@ interface IProps {
   width: string
   height: string
   readyToRender: Function
+  stopToRender: Function
 }
 const props = withDefaults(defineProps<IProps>(), {
   bgSrc: '/marker_mark.png',
   content: '起',
   width: '50px',
   height: '50px',
-  readyToRender: () => {}
+  readyToRender: () => {},
+  stopToRender: () => {}
 })
 
 const realContent = ref('')

@@ -23,7 +23,8 @@ export const useInstructStore = defineStore('instruct', {
       domList: [] as HTMLElement[],
       canvasList: [] as HTMLCanvasElement[],
       base64ImageList: [] as IImageFile[],
-      showFormat: ShowFormatEnum.DOM
+      showFormat: ShowFormatEnum.DOM,
+      formatChangeDisabled: false
     }
   },
   getters: {
@@ -71,6 +72,9 @@ export const useInstructStore = defineStore('instruct', {
     },
     setShowFormat(format: ShowFormatEnum) {
       this.showFormat = format
+    },
+    setFormatChangeDisabled(disabled: boolean) {
+      this.formatChangeDisabled = disabled
     }
   }
 })
